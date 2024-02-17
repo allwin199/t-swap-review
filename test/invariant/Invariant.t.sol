@@ -39,8 +39,20 @@ contract Invariant is StdInvariant, Test {
         tSwapPool.deposit(uint256(STARTING_Y), uint256(STARTING_Y), uint256(STARTING_X), uint64(block.timestamp));
 
         handler = new Handler(tSwapPool);
+
+        bytes4[] memory selectors = new bytes4[](2);
+        selectors[0] = Handler.deposit.selector;
+        selectors[1] = Handler.swapPoolTokenForWethBasedOnOutputWeth.selector;
+
+        targetSelector(FuzzSelector({ addr: address(handler), selectors: selectors }));
         targetContract(address(handler));
     }
 
-    function statefulFuzz_constantProductFormula_StaysTheSame() public { }
+    function statefulFuzz_constantProductFormula_StaysTheSameX() public {
+        assertEq(handler.actualDeltaX(), handler.expectedDeltaX());
+    }
+
+    function statefulFuzz_constantProductFormula_StaysTheSameY() public {
+        assertEq(handler.actualDeltaY(), handler.expectedDeltaY());
+    }
 }
