@@ -89,9 +89,10 @@ contract TSwapPool is ERC20 {
     /// @param maximumPoolTokensToDeposit The maximum amount of pool tokens the user is willing to deposit, again it's
     /// derived from the amount of WETH the user is going to deposit
     /// @param deadline The deadline for the transaction to be completed by
+    // @audit-info `dealine` is not used.
     function deposit(
         uint256 wethToDeposit,
-        uint256 minimumLiquidityTokensToMint,
+        uint256 minimumLiquidityTokensToMint, // LP tokens
         uint256 maximumPoolTokensToDeposit,
         uint64 deadline
     )
@@ -104,6 +105,7 @@ contract TSwapPool is ERC20 {
         }
         if (totalLiquidityTokenSupply() > 0) {
             uint256 wethReserves = i_wethToken.balanceOf(address(this));
+            // @audit-info `poolTokenReserves` is unused.
             uint256 poolTokenReserves = i_poolToken.balanceOf(address(this));
             // Our invariant says weth, poolTokens, and liquidity tokens must always have the same ratio after the
             // initial deposit
@@ -279,6 +281,7 @@ contract TSwapPool is ERC20 {
      * @param outputToken ERC20 token to send to caller
      * @param outputAmount The exact amount of tokens to send to caller
      */
+    // @audit-info missing `deadline` param in natspec
     function swapExactOutput(
         IERC20 inputToken,
         IERC20 outputToken,
@@ -365,12 +368,14 @@ contract TSwapPool is ERC20 {
     }
 
     function getPriceOfOneWethInPoolTokens() external view returns (uint256) {
+        // @audit-info magic number
         return getOutputAmountBasedOnInput(
             1e18, i_wethToken.balanceOf(address(this)), i_poolToken.balanceOf(address(this))
         );
     }
 
     function getPriceOfOnePoolTokenInWeth() external view returns (uint256) {
+        // @audit-info magic number
         return getOutputAmountBasedOnInput(
             1e18, i_poolToken.balanceOf(address(this)), i_wethToken.balanceOf(address(this))
         );
