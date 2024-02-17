@@ -226,6 +226,7 @@ contract TSwapPool is ERC20 {
         // totalPoolTokensOfPool) + (wethToDeposit * poolTokensToDeposit) = k
         // (totalWethOfPool * totalPoolTokensOfPool) + (wethToDeposit * totalPoolTokensOfPool) = k - (totalWethOfPool *
         // poolTokensToDeposit) - (wethToDeposit * poolTokensToDeposit)
+        // @audit-info magic numbers
         uint256 inputAmountMinusFee = inputAmount * 997;
         uint256 numerator = inputAmountMinusFee * outputReserves;
         uint256 denominator = (inputReserves * 1000) + inputAmountMinusFee;
@@ -246,6 +247,7 @@ contract TSwapPool is ERC20 {
         return ((inputReserves * outputAmount) * 10000) / ((outputReserves - outputAmount) * 997);
     }
 
+    // @audit-info/gas this should be external
     function swapExactInput(
         IERC20 inputToken,
         uint256 inputAmount,
@@ -282,6 +284,7 @@ contract TSwapPool is ERC20 {
      * @param outputAmount The exact amount of tokens to send to caller
      */
     // @audit-info missing `deadline` param in natspec
+    // @audit-info/gas this should be external
     function swapExactOutput(
         IERC20 inputToken,
         IERC20 outputToken,
