@@ -1,0 +1,1 @@
+Invariant : The property or condition of the system must always hold true.
