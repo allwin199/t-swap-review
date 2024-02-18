@@ -33,7 +33,7 @@ contract PoolFactory {
     /*//////////////////////////////////////////////////////////////
                                  EVENTS
     //////////////////////////////////////////////////////////////*/
-    // @audit-info missing index field
+    // report-skipped missing index field
     event PoolCreated(address tokenAddress, address poolAddress);
 
     /*//////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ contract PoolFactory {
                            EXTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
     // e tokenAddress is mapped to weth for a token/weth pool
-    // @audit-info add documentation about createPool
+    // report-skipped add documentation about createPool
     function createPool(address tokenAddress) external returns (address) {
         if (s_pools[tokenAddress] != address(0)) {
             revert PoolFactory__PoolAlreadyExists(tokenAddress);

@@ -42,6 +42,8 @@ Lead Security Researches:
   - [Issues found](#issues-found)
 - [Findings](#findings)
   - [High](#high)
+  - [Medium](#medium)
+    - [\[M-1\] `TSwapPool::deposit` is missing deadline check causing transactions to complete even after the deadline.](#m-1-tswappooldeposit-is-missing-deadline-check-causing-transactions-to-complete-even-after-the-deadline)
   - [Informational](#informational)
     - [\[I-1\] `PoolFactory::PoolFactory__PoolDoesNotExist` is not used and should be removed.](#i-1-poolfactorypoolfactory__pooldoesnotexist-is-not-used-and-should-be-removed)
     - [\[I-2\] Lacking zero address checks](#i-2-lacking-zero-address-checks)
@@ -95,6 +97,33 @@ Commit Hash:
 # Findings
 
 ## High
+
+## Medium
+
+### [M-1] `TSwapPool::deposit` is missing deadline check causing transactions to complete even after the deadline.
+
+**Description:** The `deposit` function accepts a deadline parameter, which according to the documentation is "The deadline for the transaction to be completed by". However, this parameter is never used. As a consequence, operations that add liquidity to the pool might be executed at unexpected times, in market conditions where the deposit rate is unfavorable.
+
+**Impact:** Transactions could be sent when market conditions are unfavorable to deposit, even when adding a deadline parameter.
+
+**Proof of Concept:** The `deadline` parameter is unused.
+
+**Recommended Mitigation:** Conside making the following change to the function.
+
+```diff
+    function deposit(
+        uint256 wethToDeposit,
+        uint256 minimumLiquidityTokensToMint, // LP tokens
+        uint256 maximumPoolTokensToDeposit,
+        uint64 deadline
+    )external
+        revertIfZero(wethToDeposit)
++       revertIfDeadlinePassed(deadline)
+        returns (uint256 liquidityTokensToMint)
+    {
+
+    }
+```
 
 ## Informational
 
