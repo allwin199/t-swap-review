@@ -268,7 +268,7 @@ contract TSwapPool is ERC20 {
 
     // report-skipped wheres the natspec???
     function swapExactInput(
-        IERC20 inputToken, // e inout token to swap / sell ie: DAI
+        IERC20 inputToken, // e input token to swap / sell ie: DAI
         uint256 inputAmount, // e amount of input token to sell ie: DAI
         IERC20 outputToken, // e output token to buy ie: WETH
         uint256 minOutputAmount, // e minimum output amount expected to receive
@@ -279,7 +279,7 @@ contract TSwapPool is ERC20 {
         revertIfZero(inputAmount)
         revertIfDeadlinePassed(deadline)
         returns (
-            // @audit-low unused parameter
+            // report-written unused parameter
             // IMPACT: SUPER LOW - protocol is giving the wrong return
             // LIKELIHOOD: HIGH - always the case
             uint256 output
@@ -329,7 +329,7 @@ contract TSwapPool is ERC20 {
 
         // AH!
         // No Slippage protection
-        // @audit need a maxInput amount check
+        // report-written need a maxInput amount check
         // If a person wants 10 WETH
         // But if price of 10 WETH is 10,000,000,000 input of DAI
         // this is bad for the user
@@ -343,7 +343,7 @@ contract TSwapPool is ERC20 {
      * @return wethAmount amount of WETH received by caller
      */
     function sellPoolTokens(uint256 poolTokenAmount) external returns (uint256 wethAmount) {
-        // @audit this is wrong!!
+        // report-written this is wrong!!
         // this should be swapExactInput()
         return swapExactOutput(i_poolToken, i_wethToken, poolTokenAmount, uint64(block.timestamp));
     }
