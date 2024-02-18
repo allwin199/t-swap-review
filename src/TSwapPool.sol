@@ -309,6 +309,7 @@ contract TSwapPool is ERC20 {
      */
     // @audit-info missing `deadline` param in natspec
     // @audit-info/gas this should be external
+    // q why are we not getting the maximum input
     function swapExactOutput(
         IERC20 inputToken,
         IERC20 outputToken,
@@ -325,6 +326,13 @@ contract TSwapPool is ERC20 {
 
         inputAmount = getInputAmountBasedOnOutput(outputAmount, inputReserves, outputReserves);
 
+        // AH!
+        // No Slippage protection
+        // @audit need a maxInput amount check
+        // If a person wants 10 WETH
+        // But if price of 10 WETH is 10,000,000,000 input of DAI
+        // this is bad for the user
+
         _swap(inputToken, inputAmount, outputToken, outputAmount);
     }
 
@@ -334,6 +342,8 @@ contract TSwapPool is ERC20 {
      * @return wethAmount amount of WETH received by caller
      */
     function sellPoolTokens(uint256 poolTokenAmount) external returns (uint256 wethAmount) {
+        // @audit this is wrong!!
+        // this should be swapExactInput()
         return swapExactOutput(i_poolToken, i_wethToken, poolTokenAmount, uint64(block.timestamp));
     }
 
