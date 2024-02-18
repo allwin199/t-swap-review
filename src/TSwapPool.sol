@@ -72,6 +72,7 @@ contract TSwapPool is ERC20 {
     )
         ERC20(liquidityTokenName, liquidityTokenSymbol)
     {
+        // @audit-info zero address check
         i_wethToken = IERC20(wethToken);
         i_poolToken = IERC20(poolToken);
     }
@@ -89,11 +90,16 @@ contract TSwapPool is ERC20 {
     /// @param maximumPoolTokensToDeposit The maximum amount of pool tokens the user is willing to deposit, again it's
     /// derived from the amount of WETH the user is going to deposit
     /// @param deadline The deadline for the transaction to be completed by
-    // @audit-info `dealine` is not used.
+    // e looked it
     function deposit(
         uint256 wethToDeposit,
         uint256 minimumLiquidityTokensToMint, // LP tokens
         uint256 maximumPoolTokensToDeposit,
+        // @audit-high `deadline` is not used.
+        // if someone sets a deadline, let's say next block
+        // they could still deposit!!
+        // IMPACT: HIGH -> a user who expects a desposit to fail, will go through. Severe disruption of functionality.
+        // Likelihood: HIGH
         uint64 deadline
     )
         external
@@ -101,11 +107,12 @@ contract TSwapPool is ERC20 {
         returns (uint256 liquidityTokensToMint)
     {
         if (wethToDeposit < MINIMUM_WETH_LIQUIDITY) {
+            // @audit-info `MINIMUM_WETH_LIQUIDITY` is a constant therfore not required to be emitted.
             revert TSwapPool__WethDepositAmountTooLow(MINIMUM_WETH_LIQUIDITY, wethToDeposit);
         }
         if (totalLiquidityTokenSupply() > 0) {
             uint256 wethReserves = i_wethToken.balanceOf(address(this));
-            // @audit-info `poolTokenReserves` is unused.
+            // @audit-info/gas `poolTokenReserves` is unused.
             uint256 poolTokenReserves = i_poolToken.balanceOf(address(this));
             // Our invariant says weth, poolTokens, and liquidity tokens must always have the same ratio after the
             // initial deposit
@@ -123,6 +130,7 @@ contract TSwapPool is ERC20 {
             // (wethReserves + wethToDeposit)  = wethReserves * poolTokensToDeposit
             // (wethReserves + wethToDeposit) / wethReserves  =  poolTokensToDeposit
             uint256 poolTokensToDeposit = getPoolTokensToDepositBasedOnWeth(wethToDeposit);
+            // e if we calculate too many pool tokens to deposit, we revert
             if (maximumPoolTokensToDeposit < poolTokensToDeposit) {
                 revert TSwapPool__MaxPoolTokenDepositTooHigh(maximumPoolTokensToDeposit, poolTokensToDeposit);
             }
@@ -137,6 +145,7 @@ contract TSwapPool is ERC20 {
             // This will be the "initial" funding of the protocol. We are starting from blank here!
             // We just have them send the tokens in, and we mint liquidity tokens based on the weth
             _addLiquidityMintAndTransfer(wethToDeposit, maximumPoolTokensToDeposit, wethToDeposit);
+            // @audit-info - it would be better if this was before the `_addLiquidityMintAndTransfer` call to follow CEI
             liquidityTokensToMint = wethToDeposit;
         }
     }
@@ -152,7 +161,10 @@ contract TSwapPool is ERC20 {
     )
         private
     {
+        // e follows CEI
         _mint(msg.sender, liquidityTokensToMint);
+        // @audit-low this is backwards, should be
+        // (msg.sender, wethToDeposit, poolTokensToDeposit);
         emit LiquidityAdded(msg.sender, poolTokensToDeposit, wethToDeposit);
 
         // Interactions
@@ -247,7 +259,6 @@ contract TSwapPool is ERC20 {
         return ((inputReserves * outputAmount) * 10000) / ((outputReserves - outputAmount) * 997);
     }
 
-    // @audit-info/gas this should be external
     function swapExactInput(
         IERC20 inputToken,
         uint256 inputAmount,
@@ -255,10 +266,14 @@ contract TSwapPool is ERC20 {
         uint256 minOutputAmount,
         uint64 deadline
     )
+        // @audit-info/gas this should be external
         public
         revertIfZero(inputAmount)
         revertIfDeadlinePassed(deadline)
-        returns (uint256 output)
+        returns (
+            // @audit-low unused parameter
+            uint256 output
+        )
     {
         uint256 inputReserves = inputToken.balanceOf(address(this));
         uint256 outputReserves = outputToken.balanceOf(address(this));
