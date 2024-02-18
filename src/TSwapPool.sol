@@ -265,12 +265,13 @@ contract TSwapPool is ERC20 {
         return ((inputReserves * outputAmount) * 10000) / ((outputReserves - outputAmount) * 997);
     }
 
+    // @audit-info wheres the natspec???
     function swapExactInput(
-        IERC20 inputToken,
-        uint256 inputAmount,
-        IERC20 outputToken,
-        uint256 minOutputAmount,
-        uint64 deadline
+        IERC20 inputToken, // e inout token to swap / sell ie: DAI
+        uint256 inputAmount, // e amount of input token to sell ie: DAI
+        IERC20 outputToken, // e output token to buy ie: WETH
+        uint256 minOutputAmount, // e minimum output amount expected to receive
+        uint64 deadline // e deadline for when the transaction should expire
     )
         // @audit-info/gas this should be external
         public
@@ -278,6 +279,8 @@ contract TSwapPool is ERC20 {
         revertIfDeadlinePassed(deadline)
         returns (
             // @audit-low unused parameter
+            // IMPACT: SUPER LOW - protocol is giving the wrong return
+            // LIKELIHOOD: HIGH - always the case
             uint256 output
         )
     {
@@ -351,6 +354,8 @@ contract TSwapPool is ERC20 {
         swap_count++;
         if (swap_count >= SWAP_COUNT_MAX) {
             swap_count = 0;
+            // @audit-info magic numbers
+            // q what if the token balance is less than 1 ether?
             outputToken.safeTransfer(msg.sender, 1_000_000_000_000_000_000);
         }
         emit Swap(msg.sender, inputToken, inputAmount, outputToken, outputAmount);
