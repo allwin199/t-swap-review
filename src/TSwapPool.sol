@@ -164,7 +164,7 @@ contract TSwapPool is ERC20 {
     {
         // e follows CEI
         _mint(msg.sender, liquidityTokensToMint);
-        // @audit-low this is backwards, should be
+        // report-written this is backwards, should be
         // (msg.sender, wethToDeposit, poolTokensToDeposit);
         emit LiquidityAdded(msg.sender, poolTokensToDeposit, wethToDeposit);
 
@@ -260,7 +260,7 @@ contract TSwapPool is ERC20 {
         // report-skipped magic numbers
         // 997/10_000
         // 91.3% fee ????
-        // @audit-high
+        // report-written
         // IMPACT: HIGH -> users are charged way too much
         // Lokelihood: HIGH -> swapExactOutput is one if the main swapping functions!!
         return ((inputReserves * outputAmount) * 10000) / ((outputReserves - outputAmount) * 997);
