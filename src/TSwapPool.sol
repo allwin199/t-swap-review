@@ -256,6 +256,12 @@ contract TSwapPool is ERC20 {
         revertIfZero(outputReserves)
         returns (uint256 inputAmount)
     {
+        // @audit-info magic numbers
+        // 997/10_000
+        // 91.3% fee ????
+        // @audit-high
+        // IMPACT: HIGH -> users are charged way too much
+        // Lokelihood: HIGH -> swapExactOutput is one if the main swapping functions!!
         return ((inputReserves * outputAmount) * 10000) / ((outputReserves - outputAmount) * 997);
     }
 
