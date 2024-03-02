@@ -1,20 +1,11 @@
-# TSwap
 
-- Tswap is v1 of uniswap
-- It is a DEX(Decentralized Exchange)
-- This project is meant to be a permissionless way for users to swap assets between each other at a fair price. You can think of T-Swap as a decentralized asset/token exchange (DEX). 
-
-![t-swap-overview](./images/diagrams/t-swap-overview.png)
-
-- A user has 10 USDC and this user wants to sell 10 USDC to buy 1 WETH
-- Now this user has 0 USDC and 1 WETH
 
 - T-Swap is known as an [Automated Market Maker (AMM)](https://chain.link/education-hub/what-is-an-automated-market-maker-amm) because it doesn't use a normal "order book" style exchange, instead it uses "Pools" of an asset. 
 - It is similar to Uniswap. To understand Uniswap, please watch this video: [Uniswap Explained](https://www.youtube.com/watch?v=DLu35sIqVTM)
 
 ## Order Book Style Exchange
 
-![classic-order-book](./images/diagrams/classic-order-book%20(1).png)
+![classic-order-book](../images/diagrams/classic-order-book%20(1).png)
 
 - UserA will come to the exchange and say I want 1 WETH for 10 USDC
 - This trade will be placed on the order book
@@ -44,7 +35,7 @@
   
 - Now, if `User A` wants to take `1 WETH` out of the pool, he must ensure the correct ratio is maintained. So he puts `10 USDC` into the USDC pool, and only then can he take out `1 WETH`.
 
-![01-amm](./images/diagrams/01-amm.png)
+![01-amm](../images/diagrams/01-amm.png)
 
 - This alters the ratio in the pools. 
 - There are now `1010 USDC` and `99 WETH`. 
@@ -61,12 +52,12 @@
 - `UserB` wants trade `1 WETH`
 - `1 WETH == 10.2 USDC`
 - Therfore `UserB` will get `10.2 USDC`
-- Poll reservoirs will get updated
+- Pool reservoirs will get updated
 - `WETH` pool will have `100 WETH`
 - `USDC` pool will have `999.8 USDC`
 - Therfore `1 WETH == 9.998 USDC`
 
-![amm-final](./images/diagrams/final-amm.png)
+![amm-final](../images/diagrams/final-amm.png)
   
 - They can keep changing the ratios by adding or subtracting amounts in these pools to trade their preferred amount, given that the ratio always is maintained. 
 - This AMM model is known as a `constant product market maker`, a type of AMM that maintains a constant product of the quantities of the two assets.
@@ -147,14 +138,6 @@
 
 - It's by these accruing transaction fees that liquidity providers gain returns on their investments. 
 - The more trades executed, the more fees generated and the more money they make, providing an explanation regarding why so many are lured towards becoming liquidity providers.
-
-
-
-
-
-
-
-
 
 
 
