@@ -77,6 +77,79 @@
 
 - `IMPORTANT`: Remember, almost all AMMs also extract a small fee for each transaction, say, `0.3%`. So, to trade `1 WETH`, one might actually need to send `1.03 WETH`, with the `0.03` WETH fee either going to its designated spot or staying within the pool.
 
+### The Role Of Liquidity Providers
+
+- Who funds these pools full of digital currencies, you ask? 
+- Enter the Liquidity Providers (LPs), the unsung heroes of the AMM system. They supply the assets to the protocol so individuals can perform swaps.
+- When an LP adds their funds - for example, 1000 USDC and 100 WETH - they gain ownership of the pool equivalent to their share of total funds, which is represented by Liquidity Provider Tokens `(LP Tokens)`.
+- So, by investing their assets into the protocol, LPs not only gain ownership but also earn a share of the transaction fees generated from the trades.
+- Let's say `LP1` adds their funds `1000 USDC and 100 WETH`
+- `LP2` adds their funds `1000 USDC and 100 WETH`
+- Pool will contain `2000 USDC` and `200 WETH`
+- `LP1` will have `50%` ownsership of this pool
+- `LP2` will have `50%` ownsership of this pool
+- `50%` ownership will come in the form of token itself `(LP Tokens)`
+- Let's say `LP1` and `LP2` has given `100 LP` tokens each
+- which resembels thier `50%` share
+
+- Let's say `LP3` adds their funds `500 USDC and 50 WETH`
+- Pool will contain `2500 USDC` and `250 WETH`
+- `500/2500 = 0.2 == 20%`
+- `LP3` has `20%` ownership in the pool
+- `LP3` will get `50 LP` tokens
+
+### More About LP Tokens And Fees
+
+- Let's investigate further into the LP Tokens and their relationship with fees. Say, a new liquidity provider, C, enters the pool with half of what A and B initially put in, essentially 500 USDC and 50 WETH. This, in turn, increases the total assets in the pool to 2500 USDC and 250 WETH.
+- In return for their contribution, liquidity provider C receives LP tokens. How many?
+- Well, we can calculate that by taking the ratio of the funds they've added to the total funds, in this case, 0.2 (or 20%). 
+- Multiplying this by the total LP Tokens, we deduce that liquidity provider C will receive 50 LP Tokens, granted their contribution.
+- Consequently, we now have a total of 250 LP Tokens in circulation. At this juncture, we also have a pool of 2500 USDC and 250 WETH ready for trades.
+
+### How Fees Make Money For Liquidity Providers
+
+- The burning question now is: How do liquidity providers make profits? 
+- The answer lies with the transaction fees mentioned earlier.
+- Every trade results in a fee that slightly adjusts the ratio of assets in the pool. 
+- For instance, if a user trades 10 USDC for 1 WETH, they're also charged a fee (0.3 USDC in our example), 
+- which changes the pool balances to `2510.3 USDC` and `249 WETH`.
+  
+- When a liquidity provider chooses to withdraw their funds, they can redeem their LP tokens for an amount of each pool asset proportional to their LP tokens. 
+- So, if Liquidity Provider C withdraws their 50 LP Tokens (representing a 20% stake), they'll get back their original investment plus their earned fees.
+- `LP3` will send back the `50 LP` tokens which is `20%` ownership
+- They will get back the original investment with some fees
+- let's calculte `20%` of the pool
+- `20% of 2510.3 = 502.06 USDC`
+- `20% of 249 = 49.8 WETH`
+- Initially `LP3` invested `500 USDC` and `50 WETH`
+- They got back `502.06 USDC` and `49.8 WETH` 
+- Initially when they were investing `1 WETH == 10 USDC`
+- `50 WETH == 500 USDC`
+- `500 USDC + 500 USDC == 1000 USDC`
+- They deposited 1000 USDC in total
+- How much they got back
+- `49.8 WETH == 498 USDC`
+- `498 USDC + 502.06 USDC == 1000.06 USDC`
+- By investing 1000 USDC they got back `1000.06` USDC
+- `0.06` profit, after 1 transaction. If they pull out after 100 tx, this number will be big
+
+```
+# Assuming 1 WETH is equivalent to 10 USDC
+
+# Initial Deposit: 500 USDC and 50 WETH
+
+# Amount Withdrawn: 502.6 USDC and 49.8 WETH
+
+# Equivalent to: 498 USDC + 502.6 USDC = 1000.6 USDC
+
+# Profit: 1000.6 USDC - 1000 USDC = 0.6 USDC
+```
+
+- It's by these accruing transaction fees that liquidity providers gain returns on their investments. 
+- The more trades executed, the more fees generated and the more money they make, providing an explanation regarding why so many are lured towards becoming liquidity providers.
+
+
+
 
 
 
