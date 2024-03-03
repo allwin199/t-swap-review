@@ -31,8 +31,10 @@ contract Invariant is StdInvariant, Test {
         tSwapPool = TSwapPool(poolFactory.createPool(address(poolToken)));
 
         // Create those initial `x & y` balances to jumpStart the pool
-        // we are simulating that `liquidators` has deposited some tokens
+        // let's give some balance for `weth` and `poolToken` to this contract
         poolToken.mint(address(this), uint256(STARTING_X));
         weth.mint(address(this), uint256(STARTING_Y));
+
+        // we are simulating that `liquidators` has deposited some tokens
     }
 }

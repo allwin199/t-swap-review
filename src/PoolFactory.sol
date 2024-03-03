@@ -24,8 +24,8 @@ contract PoolFactory {
     /*//////////////////////////////////////////////////////////////
                             STATE VARIABLES
     //////////////////////////////////////////////////////////////*/
-    mapping(address token => address pool) private s_pools; // e probably poolToken -> pool
-    mapping(address pool => address token) private s_tokens; // e mapping backwards
+    mapping(address token => address pool) private s_pools;
+    mapping(address pool => address token) private s_tokens;
 
     address private immutable i_wethToken;
 
@@ -48,7 +48,6 @@ contract PoolFactory {
         if (s_pools[tokenAddress] != address(0)) {
             revert PoolFactory__PoolAlreadyExists(tokenAddress);
         }
-
         string memory liquidityTokenName = string.concat("T-Swap ", IERC20(tokenAddress).name());
         string memory liquidityTokenSymbol = string.concat("ts", IERC20(tokenAddress).name());
         TSwapPool tPool = new TSwapPool(tokenAddress, i_wethToken, liquidityTokenName, liquidityTokenSymbol);
