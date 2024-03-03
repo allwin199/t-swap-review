@@ -63,6 +63,37 @@ There are 2 functions users can call to swap tokens in the pool.
 
 Note, in practice, the pool would have slightly different values than 1,400.3 WETH & 1,600 USDC due to the math below. 
 
+## Core Invariant 
+
+Our system works because the ratio of Token A & WETH will always stay the same. Well, for the most part. Since we add fees, our invariant technially increases. 
+
+`x * y = k`
+- x = Token Balance X
+- y = Token Balance Y
+- k = The constant ratio between X & Y
+
+```javascript
+   y = Token Balance Y
+   x = Token Balance X
+   x * y = k
+   x * y = (x + ∆x) * (y − ∆y)
+   ∆x = Change of token balance X
+   ∆y = Change of token balance Y
+   β = (∆y / y)
+   α = (∆x / x)
+
+   Final invariant equation without fees:
+   ∆x = (β/(1-β)) * x
+   ∆y = (α/(1+α)) * y
+
+   Invariant with fees
+   ρ = fee (between 0 & 1, aka a percentage)
+   γ = (1 - p) (pronounced gamma)
+   ∆x = (β/(1-β)) * (1/γ) * x
+   ∆y = (αγ/1+αγ) * y
+```
+
+
 
 
 

@@ -19,7 +19,6 @@ import { IERC20 } from "forge-std/interfaces/IERC20.sol";
 
 contract PoolFactory {
     error PoolFactory__PoolAlreadyExists(address tokenAddress);
-    // report-written unused error
     error PoolFactory__PoolDoesNotExist(address tokenAddress);
 
     /*//////////////////////////////////////////////////////////////
@@ -33,30 +32,24 @@ contract PoolFactory {
     /*//////////////////////////////////////////////////////////////
                                  EVENTS
     //////////////////////////////////////////////////////////////*/
-    // report-skipped missing index field
     event PoolCreated(address tokenAddress, address poolAddress);
 
     /*//////////////////////////////////////////////////////////////
                                FUNCTIONS
     //////////////////////////////////////////////////////////////*/
     constructor(address wethToken) {
-        // report-written lacks 0 address check
         i_wethToken = wethToken;
     }
 
     /*//////////////////////////////////////////////////////////////
                            EXTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
-    // e tokenAddress is mapped to weth for a token/weth pool
-    // report-skipped add documentation about createPool
     function createPool(address tokenAddress) external returns (address) {
         if (s_pools[tokenAddress] != address(0)) {
             revert PoolFactory__PoolAlreadyExists(tokenAddress);
         }
-        // q weird ERC20 "what if the name function reverts"?
+
         string memory liquidityTokenName = string.concat("T-Swap ", IERC20(tokenAddress).name());
-        // report-written `IERC20(tokenAddress).symbol()` instead of `IERC20(tokenAddress).name()`
-        // because appending with name can lead to large symbol
         string memory liquidityTokenSymbol = string.concat("ts", IERC20(tokenAddress).name());
         TSwapPool tPool = new TSwapPool(tokenAddress, i_wethToken, liquidityTokenName, liquidityTokenSymbol);
         s_pools[tokenAddress] = address(tPool);
