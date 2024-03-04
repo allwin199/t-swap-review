@@ -89,12 +89,21 @@ contract TSwapPool is ERC20 {
     /// @param maximumPoolTokensToDeposit The maximum amount of pool tokens the user is willing to deposit, again it's
     /// derived from the amount of WETH the user is going to deposit
     /// @param deadline The deadline for the transaction to be completed by
+    // e looked it
     function deposit(
         uint256 wethToDeposit,
-        uint256 minimumLiquidityTokensToMint,
         // LP tokens liquidator gets back for adding liquidity
-        uint256 maximumPoolTokensToDeposit,
+        uint256 minimumLiquidityTokensToMint,
         // maximumPoolTokensToDeposit will be calculated based on the weth
+        uint256 maximumPoolTokensToDeposit,
+        // @audit-high `deadline` is not used
+        // if someone sets a deadline, let's say, next block
+        // even after the next block passes. They could still deposit
+        // `deadline` is considered
+        // IMPACT: `HIGH` a user who expects a deposit to fail, the deposit will go through regardless of the duration
+        // This will lead to severe disruption of functionalitiy
+        // LIKELIHOOD: `HIGH` anyone someone wants to deposit. The deadline will be always ignored
+        // This will be always the case
         uint64 deadline
     )
         external
@@ -102,10 +111,12 @@ contract TSwapPool is ERC20 {
         returns (uint256 liquidityTokensToMint)
     {
         if (wethToDeposit < MINIMUM_WETH_LIQUIDITY) {
+            // @audit-info MINIMUM_WETH_LIQUIDITY is a constant and therfore not required to be emitted
             revert TSwapPool__WethDepositAmountTooLow(MINIMUM_WETH_LIQUIDITY, wethToDeposit);
         }
         if (totalLiquidityTokenSupply() > 0) {
             uint256 wethReserves = i_wethToken.balanceOf(address(this));
+            // @audit-gas don't need this line
             uint256 poolTokenReserves = i_poolToken.balanceOf(address(this));
             // Our invariant says weth, poolTokens, and liquidity tokens must always have the same ratio after the
             // initial deposit
@@ -123,12 +134,19 @@ contract TSwapPool is ERC20 {
             // (wethReserves + wethToDeposit)  = wethReserves * poolTokensToDeposit
             // (wethReserves + wethToDeposit) / wethReserves  =  poolTokensToDeposit
             uint256 poolTokensToDeposit = getPoolTokensToDepositBasedOnWeth(wethToDeposit);
+            // e if too many poolTokens is given as input
+            // it will revert
             if (maximumPoolTokensToDeposit < poolTokensToDeposit) {
                 revert TSwapPool__MaxPoolTokenDepositTooHigh(maximumPoolTokensToDeposit, poolTokensToDeposit);
             }
 
             // We do the same thing for liquidity tokens. Similar math.
+            // e wethToDeposit = 10 WETH | totalLiquidityTokenSupply = 100 LP | wethReserves = 100 WETH
+            // (10*100)/100 = 10 LP
             liquidityTokensToMint = (wethToDeposit * totalLiquidityTokenSupply()) / wethReserves;
+            // e let's say we deposit 10 WETH and expect 10% of LP tokens which is 10LP `minimumLiquidityTokensToMint`
+            // but after calculation if we get only `2%` of LP tokens
+            // it dosen't meet the expected LP token, therfore revert
             if (liquidityTokensToMint < minimumLiquidityTokensToMint) {
                 revert TSwapPool__MinLiquidityTokensToMintTooLow(minimumLiquidityTokensToMint, liquidityTokensToMint);
             }
@@ -137,6 +155,12 @@ contract TSwapPool is ERC20 {
             // This will be the "initial" funding of the protocol. We are starting from blank here!
             // We just have them send the tokens in, and we mint liquidity tokens based on the weth
             _addLiquidityMintAndTransfer(wethToDeposit, maximumPoolTokensToDeposit, wethToDeposit);
+
+            // `_addLiquidityMintAndTransfer` is making any external call
+            // then it is updating a variable
+            // but it is not a state variable in this case
+            // @audit-info it would be better, if this was before `_addLiquidityMintAndTransfer`
+            // to follow CEI
             liquidityTokensToMint = wethToDeposit;
         }
     }
@@ -152,7 +176,14 @@ contract TSwapPool is ERC20 {
     )
         private
     {
+        // follows CEI
         _mint(msg.sender, liquidityTokensToMint);
+        // @audit-low `wethToDeposit` then `poolTokensToDeposit`
+        // wrong order
+        // this should be
+        // (msg.sender, wethToDeposit, poolTokensToDeposit)
+        // IMPACT: LOW - protocol is giving the wrong return/information
+        // LIKELIHOOD: HIGH - always the case
         emit LiquidityAdded(msg.sender, poolTokensToDeposit, wethToDeposit);
 
         // Interactions
@@ -178,11 +209,20 @@ contract TSwapPool is ERC20 {
         revertIfZero(minPoolTokensToWithdraw)
     {
         // We do the same math as above
+        // we are getting the ratio of `weth` and `pool` tokens based of `LP` tokens
+        // If there is total of 100 LP tokens
+        // and If you have 10 LP tokens then you have 10% of the pool
+        // 10% of WETH
+        // 10% of poolToken
         uint256 wethToWithdraw =
             (liquidityTokensToBurn * i_wethToken.balanceOf(address(this))) / totalLiquidityTokenSupply();
         uint256 poolTokensToWithdraw =
             (liquidityTokensToBurn * i_poolToken.balanceOf(address(this))) / totalLiquidityTokenSupply();
 
+        // If a user wants to withdraw $1000 worth of WETH they deposited
+        // but each price tanked and all their balance is now only $500 worth of WETH
+        // now if they try to withdraw $1000 worth of WETH, it will revert
+        // same scenario for pool tokens
         if (wethToWithdraw < minWethToWithdraw) {
             revert TSwapPool__OutputTooLow(wethToWithdraw, minWethToWithdraw);
         }
@@ -269,7 +309,12 @@ contract TSwapPool is ERC20 {
         public
         revertIfZero(inputAmount)
         revertIfDeadlinePassed(deadline)
-        returns (uint256 output)
+        returns (
+            // @audit-low unused variable
+            // IMPACT : LOW - where protocol is giving the wrong return value
+            // LIKELIHOOD: HIGH - always the case
+            uint256 output
+        )
     {
         uint256 inputReserves = inputToken.balanceOf(address(this));
         uint256 outputReserves = outputToken.balanceOf(address(this));
