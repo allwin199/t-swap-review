@@ -246,10 +246,21 @@ contract TSwapPool is ERC20 {
         return ((inputReserves * outputAmount) * 10000) / ((outputReserves - outputAmount) * 997);
     }
 
+    /*
+     * @notice figures out how much you need to input based on how much
+     * output you want to receive.
+     *
+     * Example: You say "I want 1 DAI, and my input is WETH"
+     * The function will figure out how much WETH you need to input to get 1 DAI
+     * And then execute the swap
+     * @param inputToken ERC20 token to pull from caller
+     * @param outputToken ERC20 token to send to caller
+     * @param outputAmount The exact amount of tokens to send to caller
+     */
     function swapExactInput(
-        IERC20 inputToken,
+        IERC20 inputToken, // WETH
         uint256 inputAmount,
-        IERC20 outputToken,
+        IERC20 outputToken, // eg: DAI
         uint256 minOutputAmount,
         uint64 deadline
     )
@@ -282,11 +293,12 @@ contract TSwapPool is ERC20 {
      * @param outputAmount The exact amount of tokens to send to caller
      */
     function swapExactOutput(
-        IERC20 inputToken,
-        IERC20 outputToken,
+        IERC20 inputToken, // eg: DAI
+        IERC20 outputToken, // weth
         uint256 outputAmount,
         uint64 deadline
     )
+        // @audit-info missing `deadline` param in nat-spec
         public
         revertIfZero(outputAmount)
         revertIfDeadlinePassed(deadline)
@@ -322,6 +334,7 @@ contract TSwapPool is ERC20 {
             revert TSwapPool__InvalidToken();
         }
 
+        // @audit-info breaks protocol invariant
         swap_count++;
         if (swap_count >= SWAP_COUNT_MAX) {
             swap_count = 0;
