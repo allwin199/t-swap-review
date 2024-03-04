@@ -36,5 +36,29 @@ contract Invariant is StdInvariant, Test {
         weth.mint(address(this), uint256(STARTING_Y));
 
         // we are simulating that `liquidators` has deposited some tokens
+        // To deposit, liquidator has to approve the `tswapPool` to make transfers on behalfOf
+        poolToken.approve(address(tSwapPool), type(uint256).max); // liquidator is providing unlimited approval
+        weth.approve(address(tSwapPool), type(uint256).max);
+
+        // liquidator will call `deposit` to deposit the tokens into the pool
+        // Depositing into the pool, give the starting `X` & `Y` balances
+        // since the pool is empty
+        // `else` in `deposit` will be triggered
+        // `minimumLiquidityTokensToMint` can be picked by the liquidator
+        // `liquidator` will own `100%` of the pool
+        tSwapPool.deposit(uint256(STARTING_Y), uint256(STARTING_Y), uint256(STARTING_X), uint64(block.timestamp));
+    }
+
+    function statefulFuzz_constantProductFormula_StaysTheSame() public {
+        // what shoudl we `assert` here
+        // The change in the pool size of WETH should follow this function:
+        // ∆x = (β/(1-β)) * x
+
+        // How do we write this in a stateful fuzzing test?
+
+        // We can use handler
+        // In a handler we can make actual `delta x`
+        // then compare it to ∆x = (β/(1-β)) * x
+        // actual `delta x` == `∆x = (β/(1-β)) * x`
     }
 }

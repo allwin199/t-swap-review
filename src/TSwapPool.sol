@@ -92,7 +92,9 @@ contract TSwapPool is ERC20 {
     function deposit(
         uint256 wethToDeposit,
         uint256 minimumLiquidityTokensToMint,
+        // LP tokens liquidator gets back for adding liquidity
         uint256 maximumPoolTokensToDeposit,
+        // maximumPoolTokensToDeposit will be calculated based on the weth
         uint64 deadline
     )
         external
