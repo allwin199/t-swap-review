@@ -56,6 +56,7 @@
     - [\[H-4\] In `TSwapPool::_swap` the extra tokens given to users after every `swapCount` breaks the protocol invariant of `x * y = k`](#h-4-in-tswappool_swap-the-extra-tokens-given-to-users-after-every-swapcount-breaks-the-protocol-invariant-of-x--y--k)
   - [Medium](#medium)
     - [\[M-1\] `TSwapPool::deposit` is missing deadline check causing transactions to complete even after the deadline.](#m-1-tswappooldeposit-is-missing-deadline-check-causing-transactions-to-complete-even-after-the-deadline)
+    - [\[M-2\] Rebase, fee-on-transfer, and ERC777 tokens break protocol invariant](#m-2-rebase-fee-on-transfer-and-erc777-tokens-break-protocol-invariant)
   - [Low](#low)
     - [\[L-1\] `TSwapPool::LiquidityAdded` event has parameters out of order](#l-1-tswappoolliquidityadded-event-has-parameters-out-of-order)
     - [\[L-2\] Default value returned by `TSwapPool::swapExactInput` results in incorrect return value given.](#l-2-default-value-returned-by-tswappoolswapexactinput-results-in-incorrect-return-value-given)
@@ -153,7 +154,7 @@ Commit Hash:
    3. outputAmount = 1
 3. The function does not offer a maxInput amount
 4. As the transaction is pending in the mempool, the market changes! And the price moves HUGE -> 1 WETH is now 10,000 USDC. 10x more than the user expected.
-5. The transaction completes, but the user sent the protocol 10,000 USDC instead of 1,000 USDC
+5. The transaction completes, but the user sent the protocol 10,000 USDC instead of the expected 1,000 USDC
 
 **Recommended Mitigation:** We should include a `maxInputAmount` so the user only has to spend up to a specific amount, and can predict how much they will spend on the protocol.
 
@@ -233,6 +234,8 @@ Most simply put, the protocol's core invariant is broken.
 
 <details>
 
+<summary>Proof of Code</summary>
+
 ```js
     function testInvariantBroken() public {
         vm.startPrank(liquidityProvider);
@@ -309,6 +312,10 @@ Most simply put, the protocol's core invariant is broken.
     }
 ```
 
+### [M-2] Rebase, fee-on-transfer, and ERC777 tokens break protocol invariant
+
+<!-- complete this finding -->
+
 ## Low
 
 ### [L-1] `TSwapPool::LiquidityAdded` event has parameters out of order
@@ -326,7 +333,7 @@ Most simply put, the protocol's core invariant is broken.
 
 ### [L-2] Default value returned by `TSwapPool::swapExactInput` results in incorrect return value given.
 
-**Description:** The `swapExactInput` function is expected to return the actual amount of tokens bough by the caller. However, while it declares the named return value `output` it is never assigned a value, nor uses an explicit return statement.
+**Description:** The `swapExactInput` function is expected to return the actual amount of tokens bought by the caller. However, while it declares the named return value `output` it is never assigned a value, nor uses an explicit return statement.
 
 **Impact:** The return value will always be 0, giving incorrect information to the caller.
 
