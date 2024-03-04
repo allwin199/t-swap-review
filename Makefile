@@ -35,4 +35,4 @@ scopefile :; @tree ./src/ | sed 's/└/#/g' | awk -F '── ' '!/\.sol$$/ { pat
 
 slither :; slither . --config-file slither.config.json 
 
-aderyn :; aderyn .
+aderyn :; aderyn . -o aderyn-report.md
