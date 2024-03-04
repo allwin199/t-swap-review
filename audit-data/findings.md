@@ -1,4 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    .full-page {
+        width:  100%;
+        height:  100vh; /* This will make the div take up the full viewport height */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .full-page img {
+        max-width:  200;
+        max-height:  200;
+        margin-bottom: 5rem;
+    }
+    .full-page div{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+</style>
+</head>
+<body>
 
+<div class="full-page">
+    <img src="./logo.svg" alt="Logo">
+    <div>
+    <h1>Tswap Protocol Audit Report</h1>
+    <h3>Prepared by: Prince Allwin</h3>
+    </div>
+</div>
+
+</body>
+</html>
+
+<!-- Your report starts here! -->
 
 # Table of Contents
 - [Table of Contents](#table-of-contents)
@@ -13,9 +51,9 @@
 - [Findings](#findings)
   - [High](#high)
     - [\[H-1\] Incorrect fee calculation in `TSwapPool::getInputAmountBasedOnOutput` causes protocol to take too many tokens from users, resulting in lost fees.](#h-1-incorrect-fee-calculation-in-tswappoolgetinputamountbasedonoutput-causes-protocol-to-take-too-many-tokens-from-users-resulting-in-lost-fees)
-    - [\[H-3\] Lack of slippage protection in `TSwapPool::swapExactOuput` causes users to potentially receive way fewer tokens.](#h-3-lack-of-slippage-protection-in-tswappoolswapexactouput-causes-users-to-potentially-receive-way-fewer-tokens)
-    - [\[H-4\] `TSwapPool::sellPoolTokens` mismatches input and output tokens causing users to receive the incorrect amount of tokens.](#h-4-tswappoolsellpooltokens-mismatches-input-and-output-tokens-causing-users-to-receive-the-incorrect-amount-of-tokens)
-    - [\[H-5\] In `TSwapPool::_swap` the extra tokens given to users after every `swapCount` breaks the protocol invariant of `x * y = k`](#h-5-in-tswappool_swap-the-extra-tokens-given-to-users-after-every-swapcount-breaks-the-protocol-invariant-of-x--y--k)
+    - [\[H-2\] Lack of slippage protection in `TSwapPool::swapExactOuput` causes users to potentially receive way fewer tokens.](#h-2-lack-of-slippage-protection-in-tswappoolswapexactouput-causes-users-to-potentially-receive-way-fewer-tokens)
+    - [\[H-3\] `TSwapPool::sellPoolTokens` mismatches input and output tokens causing users to receive the incorrect amount of tokens.](#h-3-tswappoolsellpooltokens-mismatches-input-and-output-tokens-causing-users-to-receive-the-incorrect-amount-of-tokens)
+    - [\[H-4\] In `TSwapPool::_swap` the extra tokens given to users after every `swapCount` breaks the protocol invariant of `x * y = k`](#h-4-in-tswappool_swap-the-extra-tokens-given-to-users-after-every-swapcount-breaks-the-protocol-invariant-of-x--y--k)
   - [Medium](#medium)
     - [\[M-1\] `TSwapPool::deposit` is missing deadline check causing transactions to complete even after the deadline.](#m-1-tswappooldeposit-is-missing-deadline-check-causing-transactions-to-complete-even-after-the-deadline)
   - [Low](#low)
@@ -62,13 +100,13 @@ Commit Hash:
 
 | Severity | Number of issues found |
 | -------- | ---------------------- |
-| High     | 0                      |
-| Medium   | 0                      |
-| Low      | 0                      |
+| High     | 4                      |
+| Medium   | 1                      |
+| Low      | 2                      |
 | Gas      | 0                      |
-| Info     | 0                      |
+| Info     | 3                      |
 |          |                        |
-| Total    | 0                      |
+| Total    | 10                     |
 
 
 # Findings
@@ -100,7 +138,7 @@ Commit Hash:
     }
 ```
 
-### [H-3] Lack of slippage protection in `TSwapPool::swapExactOuput` causes users to potentially receive way fewer tokens.
+### [H-2] Lack of slippage protection in `TSwapPool::swapExactOuput` causes users to potentially receive way fewer tokens.
 
 **Description:** The `swapExactOuput` function does not include any sort of slippage protection. This function is similar to what is done in `TSwapPool::swapExactInput` where the function specifies a `minOutputAmount`, the `swapExactOuput` function should specify a `maxInputAmount`.
 
@@ -139,7 +177,7 @@ Commit Hash:
     }
 ```
 
-### [H-4] `TSwapPool::sellPoolTokens` mismatches input and output tokens causing users to receive the incorrect amount of tokens.
+### [H-3] `TSwapPool::sellPoolTokens` mismatches input and output tokens causing users to receive the incorrect amount of tokens.
 
 **Description:** The `sellPoolTokens` function is intended to allows users to easily sell pool tokens and receive WETH in exchange. Users indicate how many pool tokens they're willing to sell in the `poolTokenAmount` parameter. However, the function currently miscalculates the swapped amount.
 
@@ -165,7 +203,7 @@ Consider changing the implementation to use `swapExactInput` instead of `swapExa
 
 Additionally, it might be wise to add a deadline to the function, as there is currently no deadline.
 
-### [H-5] In `TSwapPool::_swap` the extra tokens given to users after every `swapCount` breaks the protocol invariant of `x * y = k`
+### [H-4] In `TSwapPool::_swap` the extra tokens given to users after every `swapCount` breaks the protocol invariant of `x * y = k`
 
 **Description:** The protocol follows a strict invariant `x * y = k`. Where: 
 - `X`: The balance of the pool token 
