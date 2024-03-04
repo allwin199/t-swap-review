@@ -241,6 +241,8 @@ contract TSwapPool is ERC20 {
                               GET PRICING
     //////////////////////////////////////////////////////////////*/
 
+    // @audit-info missing natspec
+    // e this function will compute if we send `1 WETH` how much `DAI` will be sent back
     function getOutputAmountBasedOnInput(
         uint256 inputAmount,
         uint256 inputReserves,
@@ -266,12 +268,18 @@ contract TSwapPool is ERC20 {
         // totalPoolTokensOfPool) + (wethToDeposit * poolTokensToDeposit) = k
         // (totalWethOfPool * totalPoolTokensOfPool) + (wethToDeposit * totalPoolTokensOfPool) = k - (totalWethOfPool *
         // poolTokensToDeposit) - (wethToDeposit * poolTokensToDeposit)
+        // @audit-info magic numbers
         uint256 inputAmountMinusFee = inputAmount * 997;
         uint256 numerator = inputAmountMinusFee * outputReserves;
         uint256 denominator = (inputReserves * 1000) + inputAmountMinusFee;
+        // the above 3 lines contribute to `0.3%` fees
+        // users have to pay this `0.03%` fees
+        // which will be given to the protocol and liquidity providers
         return numerator / denominator;
     }
 
+    // @audit-info missing natspec
+    // e this function will compute if we want `10 WETH` how much `DAI` have to be sent
     function getInputAmountBasedOnOutput(
         uint256 outputAmount,
         uint256 inputReserves,
@@ -284,9 +292,16 @@ contract TSwapPool is ERC20 {
         returns (uint256 inputAmount)
     {
         // @audit-info magic numbers
+        // @audit-high
+        // 997/10_000 = 91.3% fee
+        // actual 997/1_000 = 0.3% fee
+        // IMPACT: HIGH - users are charged way too much in fees
+        //LIKELIHOOD: HIGH - always the case `swapExactOutput` is one of the main swapping functions
         return ((inputReserves * outputAmount) * 10000) / ((outputReserves - outputAmount) * 997);
     }
 
+    // @audit-info natspec missing
+    // e added natspec for better understanding
     /*
      * @notice figures out how much you need to input based on how much
      * output you want to receive.
@@ -299,10 +314,13 @@ contract TSwapPool is ERC20 {
      * @param outputAmount The exact amount of tokens to send to caller
      */
     function swapExactInput(
-        IERC20 inputToken, // WETH
-        uint256 inputAmount,
-        IERC20 outputToken, // eg: DAI
+        IERC20 inputToken, // e input token to swap / sell ie: DAI
+        uint256 inputAmount, // e amount of input token to sell ie: DAI
+        IERC20 outputToken, // e output token to buy ie: WETH
+        // e If we sell 10 DAI we expect to atleast 1 WETH
+        // If it is less than 1 WETH it will revert
         uint256 minOutputAmount,
+        // e deadline for when the transaction should expire
         uint64 deadline
     )
         // @audit-info can be marked as external
@@ -339,6 +357,7 @@ contract TSwapPool is ERC20 {
      * @param outputToken ERC20 token to send to caller
      * @param outputAmount The exact amount of tokens to send to caller
      */
+    // q why are we not getting the maximum input
     function swapExactOutput(
         IERC20 inputToken, // eg: DAI
         IERC20 outputToken, // weth
@@ -356,6 +375,20 @@ contract TSwapPool is ERC20 {
 
         inputAmount = getInputAmountBasedOnOutput(outputAmount, inputReserves, outputReserves);
 
+        // No slippage protection
+        // let's say I want 10 output WETH and my input is DAI
+        // right now price of 10 WETH is 1 DAI
+        // we sent the transaction
+        // but the pool get a massive transaction that changes the price
+        // now the price of 10 WETH is 10 DAI
+        // user will have to spend too much money
+        // if they had a slippage protection like
+        // maxInputAmount = 1 DAI
+        // if(inputAmount > maxInputAmount){
+        // revert();
+        // }
+        // @audit-high need a max input amount
+
         _swap(inputToken, inputAmount, outputToken, outputAmount);
     }
 
@@ -365,6 +398,7 @@ contract TSwapPool is ERC20 {
      * @return wethAmount amount of WETH received by caller
      */
     function sellPoolTokens(uint256 poolTokenAmount) external returns (uint256 wethAmount) {
+        // @audit-high `swapExactInput` should be called instead of `swapExactOutput`
         return swapExactOutput(i_poolToken, i_wethToken, poolTokenAmount, uint64(block.timestamp));
     }
 
